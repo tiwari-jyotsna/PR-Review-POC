@@ -119,6 +119,8 @@ public class WalletController {
                     @ApiResponse(responseCode = "200", description = "Wallet summary returned",
                             content = @Content(schema = @Schema(implementation = WalletResponse.class))),
                     @ApiResponse(responseCode = "404", description = "Wallet not found",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Validation error",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
@@ -156,11 +158,11 @@ public class WalletController {
             HttpServletRequest httpRequest) {
 
         String requestId = resolveRequestId(httpRequest);
-        log.info("[{}] --> GET /api/wallet/{}/transactions", requestId, userId);
+        log.error("[{}] --> GET /api/wallet/{}/transactions", requestId, userId);
 
         List<TransactionResponse> history = walletService.getTransactionHistory(userId, requestId);
 
-        log.info("[{}] <-- GET /api/wallet/{}/transactions: count={}, status=200",
+        log.error("[{}] <-- GET /api/wallet/{}/transactions: count={}, status=200",
                 requestId, userId, history.size());
 
         return ResponseEntity.ok(history);
