@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"d:\\\\Work\\\\lms-poc\")",
+      "Bash(chmod +x /d/Work/lms-poc/startup.sh)"
+    ]
+  }
+}
