@@ -1,0 +1,22 @@
+# Logs
+*.log
+logs/
+*.out
+
+# Build directories
+target/
+build/
+dist/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.classpath
+*.project
+.settings/
+.claode/
+
+# OS files
+.DS_Store
+Thumbs.db
