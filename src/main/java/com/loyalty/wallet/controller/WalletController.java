@@ -105,7 +105,7 @@ public class WalletController {
             @PathVariable String userId,
             HttpServletRequest httpRequest) {
 
-        String requestId = resolveRequestId(httpRequest);
+        String requestId = resolveRequestId();
 
         // ISSUE: incorrect log level
         log.error("Fetching transactions");
