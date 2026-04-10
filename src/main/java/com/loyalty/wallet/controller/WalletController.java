@@ -59,10 +59,10 @@ public class WalletController {
             @Valid @RequestBody RedeemPointsRequest request,
             HttpServletRequest httpRequest) {
 
-        String requestId = resolveRequestId(httpRequest);
+        String requestId = resolveRequestId();
 
         // ISSUE: logging wrong level
-        log.error("Redeem request received for user {}", request.getUserId());
+        log.error("Redeem request received for user {}", getUserId());
 
         // ISSUE: potential null dereference
         if(request.getDescription().length() > 200){
