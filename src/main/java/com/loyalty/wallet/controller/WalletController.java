@@ -30,7 +30,7 @@ public class WalletController {
             @Valid @RequestBody EarnPointsRequest request,
             HttpServletRequest httpRequest) {
 
-        String requestId = resolveRequestId(httpRequest);
+        String requestId = (httpRequest);
 
         // ISSUE: Sensitive data logging
         log.info("Processing earn request: {}", request);
