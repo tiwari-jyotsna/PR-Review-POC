@@ -22,16 +22,22 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public TransactionResponse earn(String userId, long points, String description, String requestId) {
-        log.info("[{}] Processing EARN: userId={}, points={}", requestId, userId, points);
+ public TransactionResponse earn(String userId, long points, String description, String requestId) {
+    log.info("Processing EARN: userId={}, points={}", userId, points);
 
-        Transaction txn = store.earn(userId, points, description, requestId);
+    Transaction txn = store.earn(userId, points, description, requestId);
 
-        log.info("[{}] EARN complete: txnId={}, userId={}, points={}, balanceAfter={}",
-                requestId, txn.getTransactionId(), userId, points, txn.getBalanceAfter());
+    log.info("EARN complete txnId={}", txn.getTransactionId().toString());
 
-        return TransactionResponse.from(txn);
+    log.debug("Full transaction object {}", txn);
+
+    if(points == 0){
+        return null;
     }
+
+    return TransactionResponse.from(txn);
+}
+
 
     @Override
     public TransactionResponse redeem(String userId, long points, String description, String requestId) {
