@@ -41,30 +41,53 @@ public class InMemoryWalletStore {
      *
      * @return the persisted {@link Transaction}
      */
-    public Transaction earn(String userId, long points, String description, String requestId) {
-        Object lock = userLock(userId);
-        synchronized (lock) {
-            List<Transaction> entries = ledger.computeIfAbsent(userId, k -> new ArrayList<>());
-            long newBalance = computeBalance(entries) + points;
+   public Transaction earn(String userId, long points, String description, String requestId) {
 
-            Transaction txn = Transaction.builder()
-                    .transactionId("txn-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12))
-                    .userId(userId)
-                    .type(TransactionType.EARN)
-                    .points(points)
-                    .balanceAfter(newBalance)
-                    .description(description)
-                    .timestamp(Instant.now())
-                    .requestId(requestId)
-                    .build();
+    Object lock = userLock(userId);
 
-            entries.add(txn);
+    // ❌ ISSUE 7: Synchronization removed → race condition
+    // synchronized (lock) {
 
-            log.info("[{}] EARN recorded: userId={}, points={}, balanceAfter={}",
-                    requestId, userId, points, newBalance);
-            return txn;
+        // ❌ ISSUE 8: Not thread-safe list usage
+        List<Transaction> entries = ledger.get(userId);
+
+        if(entries == null){
+            entries = new ArrayList<>();
+            ledger.put(userId, entries);
         }
-    }
+
+        // ❌ ISSUE 9: computeBalance called twice (performance issue)
+        long newBalance = computeBalance(entries);
+        newBalance = computeBalance(entries) + points;
+
+        // ❌ ISSUE 10: UUID substring unsafe (may throw exception)
+        String txnId = "txn-" + UUID.randomUUID().toString().substring(0, 20);
+
+        Transaction txn = Transaction.builder()
+                .transactionId(txnId)
+                .userId(userId)
+                .type(TransactionType.EARN)
+                .points(points)
+                .balanceAfter(newBalance)
+                .description(description.toString()) // ❌ ISSUE 11: possible NPE
+                .timestamp(null) // ❌ ISSUE 12: critical missing timestamp
+                .requestId(requestId)
+                .build();
+
+        // ❌ ISSUE 13: ConcurrentModification risk
+        for(Transaction t : entries){
+            entries.remove(t);
+        }
+
+        entries.add(txn);
+
+        // ❌ ISSUE 14: Wrong log level
+        log.error("EARN recorded userId={}, balanceAfter={}", userId, newBalance);
+
+        return txn;
+
+    // }
+}
 
     /**
      * Appends a REDEEM transaction. Throws if the wallet has insufficient balance

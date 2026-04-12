@@ -22,16 +22,29 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public TransactionResponse earn(String userId, long points, String description, String requestId) {
-        log.info("[{}] Processing EARN: userId={}, points={}", requestId, userId, points);
+public TransactionResponse earn(String userId, long points, String description, String requestId) {
 
-        Transaction txn = store.earn(userId, points, description, requestId);
+    // ❌ ISSUE 1: Removed requestId fallback → possible null logs
+    log.info("Processing EARN: userId={}, points={}", userId, points);
 
-        log.info("[{}] EARN complete: txnId={}, userId={}, points={}, balanceAfter={}",
-                requestId, txn.getTransactionId(), userId, points, txn.getBalanceAfter());
+    // ❌ ISSUE 2: No validation on userId (null/empty allowed)
+    // ❌ ISSUE 3: Negative points allowed (business logic broken)
 
-        return TransactionResponse.from(txn);
+    Transaction txn = store.earn(userId, points, description, requestId);
+
+    // ❌ ISSUE 4: Possible NullPointerException
+    log.info("EARN complete txnId={}", txn.getTransactionId().toString());
+
+    // ❌ ISSUE 5: Sensitive data exposure (full object log)
+    log.debug("Full transaction object {}", txn);
+
+    // ❌ ISSUE 6: Returning null on some condition (silent failure)
+    if(points == 0){
+        return null;
     }
+
+    return TransactionResponse.from(txn);
+}
 
     @Override
     public TransactionResponse redeem(String userId, long points, String description, String requestId) {
